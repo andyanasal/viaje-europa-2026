@@ -1,11 +1,13 @@
-const CACHE='bio2026-shell-v9';
-const SHELL=['./','./index.html','./manifest.webmanifest','./app-icon.png','./nested-recs.js','./trip-dates.js'];
+const CACHE='bio2026-shell-v10';
+const SHELL=['./','./index.html','./manifest.webmanifest','./app-icon.png','./nested-recs.js','./trip-dates.js','./pdf-fix.js'];
 const EXTRA_RECS='<script src="./nested-recs.js"></script>';
 const EXTRA_DATES='<script src="./trip-dates.js"></script>';
+const EXTRA_PDF='<script src="./pdf-fix.js"></script>';
 function withFixes(text){
   let body=text.replace('<details><summary>Vuelos</summary><div class="inside"><div id="pendingList">','<details><summary>Pendientes</summary><div class="inside"><div id="pendingList">');
   if(!body.includes('nested-recs.js'))body=body.replace('</body>',EXTRA_RECS+'</body>');
   if(!body.includes('trip-dates.js'))body=body.replace('</body>',EXTRA_DATES+'</body>');
+  if(!body.includes('pdf-fix.js'))body=body.replace('</body>',EXTRA_PDF+'</body>');
   return body;
 }
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
