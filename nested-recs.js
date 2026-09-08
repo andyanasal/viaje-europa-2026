@@ -16,6 +16,12 @@ style.textContent=`
 `;
 document.head.appendChild(style);
 
+function fixMainHeadings(){
+  const names=['Itinerario','Pendientes','Recordatorios','Recomendaciones','Vuelos / Traslados','Entradas','Notas'];
+  document.querySelectorAll('main > details > summary').forEach((s,i)=>{if(names[i])s.textContent=names[i]});
+}
+fixMainHeadings();
+
 const preferred=['Imperdibles','Museos / cultura','Con Ampi','Gastronomía','Paseos / parques','Compras'];
 function recCategory(rec){
   if(rec.category)return rec.category;
@@ -29,13 +35,14 @@ function recTitle(rec){
   return i>=0?t.slice(i+1).trim():t;
 }
 
-renderCities=function(){
+renderCities=function(openCityId=null,openCat=null,editRecId=null){
   const h=document.getElementById('citiesList');
   if(!h)return;
   h.innerHTML='';
   state.cities.forEach(city=>{
     const c=document.createElement('details');
     c.className='citycard';
+    if(city.id===openCityId)c.open=true;
     c.innerHTML=`<summary>${esc(city.name)}</summary><div class="citytools"><button class="iconbtn editcity">Editar ciudad</button><button class="iconbtn danger delcity">Eliminar ciudad</button></div><div class="cats"></div>`;
     h.appendChild(c);
 
@@ -46,7 +53,7 @@ renderCities=function(){
       snap();
       city.name=name.trim()||city.name;
       persist();
-      renderCities();
+      renderCities(city.id);
     };
     c.querySelector('.delcity').onclick=e=>{
       e.stopPropagation();
@@ -69,6 +76,7 @@ renderCities=function(){
     cats.forEach(cat=>{
       const d=document.createElement('details');
       d.className='catcard';
+      if(city.id===openCityId&&cat===openCat)d.open=true;
       d.innerHTML=`<summary>${esc(cat)}</summary><div class="catinside"><div class="recs"></div><button class="addbtn addrec">+ Agregar en ${esc(cat)}</button></div>`;
       ch.appendChild(d);
       const rh=d.querySelector('.recs');
@@ -76,36 +84,56 @@ renderCities=function(){
       groups[cat].forEach(rec=>{
         const rr=document.createElement('div');
         rr.className='recrow';
-        rr.innerHTML=`<div class="recval"><div class="rectitle">${esc(recTitle(rec))}</div>${rec.note?`<span class="recnote">${esc(rec.note)}</span>`:''}</div><div class="actions"><button class="iconbtn editrec">Editar</button><button class="iconbtn danger delrec">×</button></div>`;
         rh.appendChild(rr);
 
-        rr.querySelector('.editrec').onclick=()=>{
-          rr.innerHTML=`<div class="recval"><input class="editinput ri" value="${esc(recTitle(rec))}"><input class="editinput ni" style="margin-top:6px" placeholder="Nota / horario / día recomendado" value="${esc(rec.note||'')}"></div><div class="actions"><button class="iconbtn save">Guardar</button><button class="iconbtn cancel">Cancelar</button></div>`;
-          rr.querySelector('.save').onclick=()=>{
+        const showView=()=>{
+          rr.innerHTML=`<div class="recval"><div class="rectitle">${esc(recTitle(rec))}</div>${rec.note?`<span class="recnote">${esc(rec.note)}</span>`:''}</div><div class="actions"><button class="iconbtn editrec">Editar</button><button class="iconbtn danger delrec">×</button></div>`;
+          rr.querySelector('.editrec').onclick=showEdit;
+          rr.querySelector('.delrec').onclick=()=>{
+            if(!confirm('¿Eliminar esta recomendación?'))return;
             snap();
-            rec.text=rr.querySelector('.ri').value;
-            rec.category=cat;
-            rec.note=rr.querySelector('.ni').value;
+            city.recs=city.recs.filter(x=>x.id!==rec.id);
             persist();
-            renderCities();
+            renderCities(city.id,cat);
+            toast('Recomendación eliminada · podés deshacer');
           };
-          rr.querySelector('.cancel').onclick=renderCities;
         };
-        rr.querySelector('.delrec').onclick=()=>{
-          if(!confirm('¿Eliminar esta recomendación?'))return;
-          snap();
-          city.recs=city.recs.filter(x=>x.id!==rec.id);
-          persist();
-          renderCities();
-          toast('Recomendación eliminada · podés deshacer');
+
+        const showEdit=()=>{
+          rr.innerHTML=`<div class="recval"><input class="editinput ri" value="${esc(recTitle(rec))}"><input class="editinput ni" style="margin-top:6px" placeholder="Nota / horario / día recomendado" value="${esc(rec.note||'')}"></div><div class="actions"><button class="iconbtn save">Guardar</button><button class="iconbtn cancel">Cancelar</button></div>`;
+          const ri=rr.querySelector('.ri');
+          ri.focus();
+          ri.select();
+          rr.querySelector('.save').onclick=()=>{
+            const title=ri.value.trim();
+            if(!title){toast('Escribí una recomendación');return}
+            snap();
+            rec.text=title;
+            rec.category=cat;
+            rec.note=rr.querySelector('.ni').value.trim();
+            persist();
+            renderCities(city.id,cat);
+          };
+          rr.querySelector('.cancel').onclick=()=>{
+            if(rec.text==='Nueva recomendación'&&!rec.note){
+              city.recs=city.recs.filter(x=>x.id!==rec.id);
+              persist();
+            }
+            renderCities(city.id,cat);
+          };
         };
+
+        if(rec.id===editRecId)showEdit();else showView();
       });
 
-      d.querySelector('.addrec').onclick=()=>{
+      d.querySelector('.addrec').onclick=e=>{
+        e.preventDefault();
+        e.stopPropagation();
         snap();
-        city.recs.push({id:'rec'+Date.now(),text:'Nueva recomendación',category:cat,note:''});
+        const rec={id:'rec'+Date.now(),text:'Nueva recomendación',category:cat,note:''};
+        city.recs.push(rec);
         persist();
-        renderCities();
+        renderCities(city.id,cat,rec.id);
       };
     });
 
@@ -119,5 +147,36 @@ renderCities=function(){
   });
 };
 
-renderCities();
+if(typeof itemRow==='function'){
+  const baseItemRow=itemRow;
+  itemRow=function(type,item){
+    const row=baseItemRow(type,item);
+    if(type==='flight'||type==='ticket'){
+      const nameEl=row.querySelector('.namev');
+      if(nameEl){
+        nameEl.onclick=async()=>{
+          const win=window.open('about:blank','_blank');
+          try{
+            const file=await getDocumentFile(item.id);
+            if(!file){
+              if(win)win.close();
+              toast(navigator.onLine?'Primero adjuntá un PDF o imagen':'Este archivo todavía no está guardado offline');
+              return;
+            }
+            const url=URL.createObjectURL(file);
+            if(win)win.location.href=url;else location.href=url;
+            setTimeout(()=>URL.revokeObjectURL(url),300000);
+          }catch(e){
+            if(win)win.close();
+            toast('No se pudo abrir el archivo');
+          }
+        };
+      }
+    }
+    return row;
+  };
+}
+
+renderAll();
+fixMainHeadings();
 })();
