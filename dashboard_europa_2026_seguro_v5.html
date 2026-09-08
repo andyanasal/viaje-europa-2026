@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090b">
+<title>Europa 2026</title>
+<style>
+:root{--bg:#09090b;--card:#141417;--text:#f5f5f7;--muted:#a1a1aa;--line:#2a2a31;--danger:#ff6b6b;--ok:#30d158}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#17171b 0,#09090b 34%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:920px;margin:auto;padding:20px 16px 72px}
+.hero{padding:28px 4px 10px}.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:clamp(36px,8vw,64px);line-height:.95;margin:9px 0 12px;letter-spacing:-.045em}.sub{color:var(--muted);font-size:17px}
+.topbuttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1px solid var(--line);background:#17171b;color:var(--text);padding:11px 14px;border-radius:999px;font-weight:700;font-size:14px}
+.btn.primary{background:#fff;color:#09090b;border-color:#fff}.btn:disabled{opacity:.35}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.kpi{background:rgba(20,20,23,.88);border:1px solid var(--line);border-radius:18px;padding:15px}
+.kpi b{display:block;font-size:20px;margin-bottom:4px}.kpi span{font-size:12px;color:var(--muted)}
+details{background:rgba(20,20,23,.9);border:1px solid var(--line);border-radius:22px;margin:12px 0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:19px 18px;font-weight:750;font-size:18px;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none} summary:after{content:"+";font-size:25px;color:var(--muted);font-weight:400}details[open] summary:after{content:"−"}
+.inside{padding:0 18px 18px}.row{display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
+.check{width:20px;height:20px;accent-color:white;flex:0 0 auto}
+.fields{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:8px;flex:1;align-items:center}
+.value{padding:8px 9px;min-height:36px}.datevalue{color:var(--muted);text-align:right;font-size:13px}
+.editinput{width:100%;border:1px solid var(--line);background:#0f0f12;color:var(--text);border-radius:10px;padding:8px 9px;font:inherit}
+.editinput.date{text-align:right;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:5px}.iconbtn{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:#d4d4d8;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:700}
+.iconbtn.danger{color:var(--danger)}.iconbtn.save{color:var(--ok)}
+.addbtn{margin-top:12px;width:100%;border:1px dashed #3a3a42;background:transparent;color:#d4d4d8;padding:11px;border-radius:13px;font:inherit;font-weight:650}
+.citycard{border-top:1px solid var(--line);padding:14px 0}.citycard:first-child{border-top:0}.cityhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.citytitle{font-weight:750;font-size:16px;flex:1}.recrow{display:flex;gap:8px;align-items:center;margin:6px 0}.recval{flex:1;padding:8px 9px}
+.note{width:100%;min-height:130px;border:1px solid var(--line);background:#0f0f12;color:var(--text);border-radius:15px;padding:13px;font:inherit}
+.smalltxt,.footer{font-size:12px;color:var(--muted)}.footer{text-align:center;margin-top:24px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#f5f5f7;color:#09090b;padding:10px 14px;border-radius:999px;font-weight:700;font-size:13px;display:none;z-index:20}
+@media(max-width:650px){main{padding:14px 12px 54px}.grid{grid-template-columns:repeat(2,1fr)}h1{font-size:44px}.fields{grid-template-columns:minmax(0,1fr) 82px}.actions{flex-direction:column}.iconbtn{padding:6px 7px}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<div class="eyebrow">Viaje familiar · Noviembre 2026</div>
+<h1>Europa 2026</h1>
+<div class="sub">Andrés · Mili · Ampi · 4–16 noviembre</div>
+<div class="topbuttons">
+<button class="btn primary" id="shareBtn">Compartir</button>
+<button class="btn" id="undoBtn" disabled>Deshacer</button>
+<button class="btn" id="restoreBtn">Restaurar base</button>
+</div>
+</section>
+
+<div class="grid">
+<div class="kpi"><b>4 Nov</b><span>Salida EZE</span></div>
+<div class="kpi"><b>16 Nov</b><span>Regreso desde MAD</span></div>
+<div class="kpi"><b>9–11</b><span>BIO-Europe · Colonia</span></div>
+<div class="kpi"><b>3</b><span>Viajeros</span></div>
+</div>
+
+<details><summary>Itinerario</summary><div class="inside">
+<div id="itineraryList"></div><button class="addbtn" data-add="itinerary">+ Agregar etapa</button>
+</div></details>
+
+<details><summary>Pendientes</summary><div class="inside">
+<div id="pendingList"></div><button class="addbtn" data-add="pending">+ Agregar pendiente</button>
+</div></details>
+
+<details><summary>Restricciones / recordatorios</summary><div class="inside">
+<div id="restrictionList"></div><button class="addbtn" data-add="restriction">+ Agregar restricción</button>
+</div></details>
+
+<details><summary>Recomendaciones por ciudad</summary><div class="inside">
+<div id="citiesList"></div><button class="addbtn" id="addCity">+ Agregar ciudad</button>
+</div></details>
+
+<details><summary>Vuelos / traslados</summary><div class="inside">
+<div id="flightList"></div><button class="addbtn" data-add="flight">+ Agregar vuelo / traslado</button>
+<p class="smalltxt">No se publican números de reserva ni documentos personales.</p>
+</div></details>
+
+<details><summary>Notas</summary><div class="inside">
+<textarea class="note" id="notes" placeholder="Hoteles, ideas, cambios o recordatorios..."></textarea>
+</div></details>
+
+<div class="footer">Todo se guarda en este dispositivo. Para modificar algo, tocá “Editar”.</div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='europa2026:v5:';
+const defaults={
+ itinerary:[
+  {id:'i1',name:'Buenos Aires → Madrid',date:'4 Nov'},
+  {id:'i2',name:'Madrid · llegada 15:10 / tarde tranquila',date:'5 Nov'},
+  {id:'i3',name:'Madrid · día completo',date:'6 Nov'},
+  {id:'i4',name:'Madrid → Düsseldorf → Colonia',date:'7 Nov'},
+  {id:'i5',name:'Colonia · día libre / excursión',date:'8 Nov'},
+  {id:'i6',name:'Colonia · BIO-Europe',date:'9–11 Nov'},
+  {id:'i7',name:'Colonia → Brujas',date:'12 Nov'},
+  {id:'i8',name:'Brujas · día completo',date:'13 Nov'},
+  {id:'i9',name:'Brujas → Bruselas → Madrid',date:'14 Nov'},
+  {id:'i10',name:'Madrid · compras / paseo / descanso',date:'15 Nov'},
+  {id:'i11',name:'Madrid → Buenos Aires',date:'16 Nov'}
+ ],
+ pending:[
+  {id:'p1',name:'Vuelo Madrid → Düsseldorf',date:'7 Nov',done:false},
+  {id:'p2',name:'Vuelo Bruselas → Madrid',date:'14 Nov',done:false},
+  {id:'p3',name:'Tren Düsseldorf → Colonia',date:'7 Nov',done:false},
+  {id:'p4',name:'Tren Colonia → Brujas',date:'12 Nov',done:false},
+  {id:'p5',name:'Alojamiento Madrid',date:'5–7 Nov',done:false},
+  {id:'p6',name:'Alojamiento Madrid',date:'14–16 Nov',done:false},
+  {id:'p7',name:'Alojamiento Brujas',date:'12–14 Nov',done:false},
+  {id:'p8',name:'Confirmar hotel Colonia para Andrés + Ampi',date:'7–12 Nov',done:false}
+ ],
+ restriction:[
+  {id:'r1',name:'Chocolate Museum cerrado los lunes',date:'9 Nov'},
+  {id:'r2',name:'Burg Eltz cerrado en noviembre',date:'Nov'},
+  {id:'r3',name:'Comprar tickets de tren en Bélgica antes de subir',date:'Desde jul 2026'}
+ ],
+ flight:[
+  {id:'f1',name:'IB108 · EZE → MAD · 20:45 → 15:10',date:'4–5 Nov'},
+  {id:'f2',name:'IB103 · MAD → EZE · 23:59 → 08:40',date:'16–17 Nov'}
+ ],
+ cities:[
+  {id:'c1',name:'Madrid',recs:[{id:'m1',text:'Retiro'},{id:'m2',text:'Madrid Río'},{id:'m3',text:'Plaza de España'},{id:'m4',text:'Museo de las Ilusiones'}]},
+  {id:'c2',name:'Colonia',recs:[{id:'k1',text:'Zoo'},{id:'k2',text:'Rheinpark'},{id:'k3',text:'Chocolate Museum'},{id:'k4',text:'Catedral'},{id:'k5',text:'Bimmelbahn'}]},
+  {id:'c3',name:'Brujas',recs:[{id:'b1',text:'Canales'},{id:'b2',text:'Minnewater'},{id:'b3',text:'Graaf Visartpark'},{id:'b4',text:'Historium'}]},
+  {id:'c4',name:'Bruselas',recs:[{id:'br1',text:'Grand Place'},{id:'br2',text:'Centro'},{id:'br3',text:'Chocolate / waffles'}]}
+ ]
+};
+let state={
+ itinerary:JSON.parse(localStorage.getItem(KEY+'itinerary')||JSON.stringify(defaults.itinerary)),
+ pending:JSON.parse(localStorage.getItem(KEY+'pending')||JSON.stringify(defaults.pending)),
+ restriction:JSON.parse(localStorage.getItem(KEY+'restriction')||JSON.stringify(defaults.restriction)),
+ flight:JSON.parse(localStorage.getItem(KEY+'flight')||JSON.stringify(defaults.flight)),
+ cities:JSON.parse(localStorage.getItem(KEY+'cities')||JSON.stringify(defaults.cities))
+};
+let history=[];
+function snap(){history.push(JSON.stringify(state)); if(history.length>30)history.shift();document.getElementById('undoBtn').disabled=false}
+function persist(){for(const k of ['itinerary','pending','restriction','flight','cities'])localStorage.setItem(KEY+k,JSON.stringify(state[k]))}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1600)}
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function firstNum(s){const m=String(s).match(/\d{1,2}/);return m?+m[0]:99}
+function sortChrono(type){if(type==='itinerary'||type==='pending'||type==='flight')state[type].sort((a,b)=>firstNum(a.date)-firstNum(b.date))}
+function saveAndRender(type){sortChrono(type);persist();renderAll()}
+function itemRow(type,item){
+ const row=document.createElement('div');row.className='row';row.dataset.id=item.id;
+ const chk=type==='pending'?`<input class="check" type="checkbox" ${item.done?'checked':''}>`:'';
+ row.innerHTML=`${chk}<div class="fields"><div class="value namev">${esc(item.name)}</div><div class="value datevalue datev">${esc(item.date)}</div></div>
+ <div class="actions"><button class="iconbtn editbtn">Editar</button><button class="iconbtn danger delbtn">×</button></div>`;
+ if(type==='pending')row.querySelector('.check').onchange=e=>{snap();item.done=e.target.checked;persist()};
+ row.querySelector('.editbtn').onclick=()=>{
+   const f=row.querySelector('.fields');
+   f.innerHTML=`<input class="editinput namei" value="${esc(item.name)}"><input class="editinput date datei" value="${esc(item.date)}">`;
+   const a=row.querySelector('.actions');a.innerHTML=`<button class="iconbtn save">Guardar</button><button class="iconbtn cancel">Cancelar</button>`;
+   a.querySelector('.save').onclick=()=>{snap();item.name=f.querySelector('.namei').value;item.date=f.querySelector('.datei').value;saveAndRender(type);toast('Cambio guardado')};
+   a.querySelector('.cancel').onclick=()=>renderAll();
+ };
+ row.querySelector('.delbtn').onclick=()=>{
+   if(!confirm('¿Seguro que querés eliminar este elemento?'))return;
+   snap();state[type]=state[type].filter(x=>x.id!==item.id);saveAndRender(type);toast('Elemento eliminado · podés deshacer');
+ };
+ return row;
+}
+function renderList(type){const h=document.getElementById(type+'List');h.innerHTML='';sortChrono(type);state[type].forEach(x=>h.appendChild(itemRow(type,x)))}
+function renderCities(){
+ const h=document.getElementById('citiesList');h.innerHTML='';
+ state.cities.forEach(city=>{
+  const c=document.createElement('div');c.className='citycard';
+  c.innerHTML=`<div class="cityhead"><div class="citytitle">${esc(city.name)}</div><button class="iconbtn editcity">Editar</button><button class="iconbtn danger delcity">×</button></div><div class="recs"></div><button class="addbtn addrec">+ Agregar recomendación</button>`;
+  h.appendChild(c);
+  c.querySelector('.editcity').onclick=()=>{
+    const head=c.querySelector('.cityhead');head.innerHTML=`<input class="editinput cityi" value="${esc(city.name)}"><button class="iconbtn save">Guardar</button><button class="iconbtn cancel">Cancelar</button>`;
+    head.querySelector('.save').onclick=()=>{snap();city.name=head.querySelector('.cityi').value;persist();renderCities()};
+    head.querySelector('.cancel').onclick=renderCities;
+  };
+  c.querySelector('.delcity').onclick=()=>{if(!confirm('¿Seguro que querés eliminar esta ciudad y todas sus recomendaciones?'))return;snap();state.cities=state.cities.filter(x=>x.id!==city.id);persist();renderCities();toast('Ciudad eliminada · podés deshacer')};
+  const rh=c.querySelector('.recs');
+  city.recs.forEach(rec=>{
+    const rr=document.createElement('div');rr.className='recrow';rr.innerHTML=`<div class="recval">${esc(rec.text)}</div><button class="iconbtn editrec">Editar</button><button class="iconbtn danger delrec">×</button>`;
+    rh.appendChild(rr);
+    rr.querySelector('.editrec').onclick=()=>{rr.innerHTML=`<input class="editinput ri" value="${esc(rec.text)}"><button class="iconbtn save">Guardar</button><button class="iconbtn cancel">Cancelar</button>`;
+      rr.querySelector('.save').onclick=()=>{snap();rec.text=rr.querySelector('.ri').value;persist();renderCities()};
+      rr.querySelector('.cancel').onclick=renderCities;
+    };
+    rr.querySelector('.delrec').onclick=()=>{if(!confirm('¿Eliminar esta recomendación?'))return;snap();city.recs=city.recs.filter(x=>x.id!==rec.id);persist();renderCities();toast('Recomendación eliminada · podés deshacer')};
+  });
+  c.querySelector('.addrec').onclick=()=>{snap();city.recs.push({id:'rec'+Date.now(),text:'Nueva recomendación'});persist();renderCities()};
+ });
+}
+function renderAll(){['itinerary','pending','restriction','flight'].forEach(renderList);renderCities()}
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const t=b.dataset.add;snap();state[t].push({id:t+Date.now(),name:t==='itinerary'?'Nueva etapa':t==='pending'?'Nuevo pendiente':t==='restriction'?'Nueva restricción':'Nuevo vuelo / traslado',date:'Fecha',...(t==='pending'?{done:false}:{})});saveAndRender(t)});
+document.getElementById('addCity').onclick=()=>{snap();state.cities.push({id:'city'+Date.now(),name:'Nueva ciudad',recs:[]});persist();renderCities()};
+document.getElementById('undoBtn').onclick=()=>{if(!history.length)return;state=JSON.parse(history.pop());persist();renderAll();document.getElementById('undoBtn').disabled=!history.length;toast('Último cambio deshecho')};
+document.getElementById('restoreBtn').onclick=()=>{if(!confirm('Esto restaura la versión base del viaje. ¿Continuar?'))return;snap();state=JSON.parse(JSON.stringify(defaults));persist();renderAll();toast('Base restaurada')};
+const notes=document.getElementById('notes');notes.value=localStorage.getItem(KEY+'notes')||'';notes.oninput=()=>localStorage.setItem(KEY+'notes',notes.value);
+document.getElementById('shareBtn').onclick=async()=>{try{if(navigator.share)await navigator.share({title:'Europa 2026',text:'Dashboard del viaje',url:location.href});else alert('Abrilo desde Safari para compartirlo.')}catch(e){}};
+renderAll();
+</script>
+</body>
+</html>
