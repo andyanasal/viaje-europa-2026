@@ -1,0 +1,13 @@
+{
+  "name": "BIO Europe 2026 · Viaje",
+  "short_name": "BIO 2026",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "description": "Dashboard compartido del viaje familiar a BIO Europe 2026",
+  "icons": [
+    {"src":"./app-icon.png","sizes":"360x360","type":"image/png","purpose":"any maskable"}
+  ]
+}
